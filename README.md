@@ -8,7 +8,7 @@ service like Deta, InspireCloud, CloudBase, LeanCloud. Ported from [walinejs/dit
 ## Quick Start
 
 ```ts
-import dittorm from "https://denopkg.com/so1ve/dittorm-deno/mod.ts";
+import dittorm from "https://deno.land/x/dittorm/mod.ts";
 
 const userModel = dittorm("leancloud")("user", {
   appId: "xxx",
