@@ -6,13 +6,17 @@ export type WhereValue<T = any> =
   | ["IN" | "NOT IN", T[]]
   | ["LIKE", string]
   | ["!=" | ">", T];
-export type Complex<L = "common"> = {
-  [key: string]: WhereValue | string;
-  _logic: L extends "leancloud" ? "or" | "and" : "or" | "and" | "not" | "nor";
+
+type LogicKey = "_logic";
+export type Complex<T> = {
+  [key in (keyof T | LogicKey)]: key extends LogicKey ? "or" | "and"
+    : WhereValue<any> | string;
 };
-export type Where<L = "common"> = {
-  [key: string]: WhereValue | Complex<L> | undefined;
-  _complex?: Complex<L>;
+
+type ComplexKey = "_complex";
+export type Where<T> = {
+  [key in (keyof T | ComplexKey)]?: key extends ComplexKey ? Complex<T>
+    : WhereValue<any> | Complex<T> | undefined;
 };
 export type SelectOptions = {
   limit?: number;

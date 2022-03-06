@@ -48,6 +48,7 @@ export default class LeanCloudModel extends Model {
     }
 
     if (where.hasOwnProperty(this.#pk)) {
+      //@ts-ignore .
       where[this._pk] = where[this.#pk];
     }
     for (const k in where) {
