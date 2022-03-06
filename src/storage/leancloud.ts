@@ -8,7 +8,6 @@ import {
   Where,
 } from "../types.ts";
 
-type WL = Where<"leancloud">;
 type CL = ConfigMapping["leancloud"];
 type InitFunction = {
   initialized?: boolean;
@@ -25,7 +24,7 @@ const init: InitFunction = (config: CL) => {
     masterKey: config.leanMasterKey,
   });
 };
-export default class LeanCloudModel extends Model {
+export default class LeanCloudModel<T = any> extends Model<T> {
   #pk: string;
   private static connect(config: CL) {
     init(config);
@@ -41,7 +40,7 @@ export default class LeanCloudModel extends Model {
     return "objectId";
   }
 
-  private parseWhere(className: string, where: WL) {
+  private parseWhere(className: string, where: Where<T>) {
     const instance = new AV.Query(className);
     if (_.isEmpty(where)) {
       return instance;
@@ -51,59 +50,59 @@ export default class LeanCloudModel extends Model {
       //@ts-ignore .
       where[this._pk] = where[this.#pk];
     }
-    for (const k in where) {
+    for (const [k, v] of Object.entries(where)) {
       if (k === "_complex" || k === this.#pk) {
         continue;
       }
 
       if (
-        _.isString(where[k]) || _.isNumber(where[k]) || _.isBoolean(where[k])
+        _.isString(v) || _.isNumber(v) || _.isBoolean(v)
       ) {
-        instance.equalTo(k, where[k]);
+        instance.equalTo(k, v);
         continue;
       }
 
-      if (where[k] === undefined) {
+      if (v === undefined) {
         instance.doesNotExist(k);
         continue;
       }
 
-      if (!Array.isArray(where[k]) || !where[k][0]) {
+      if (!Array.isArray(v) || !v[0]) {
         continue;
       }
 
-      const handler = where[k][0].toUpperCase();
+      const handler = v[0].toUpperCase();
       switch (handler) {
         case "IN":
-          instance.containedIn(k, where[k][1]);
+          instance.containedIn(k, v[1]);
           break;
         case "NOT IN":
-          instance.notContainedIn(k, where[k][1]);
+          instance.notContainedIn(k, v[1]);
           break;
         case "LIKE": {
-          const first = where[k][1][0];
-          const last = where[k][1].slice(-1);
+          const first = v[1][0];
+          const last = v[1].slice(-1);
           if (first === "%" && last === "%") {
-            instance.contains(k, where[k][1].slice(1, -1));
+            instance.contains(k, v[1].slice(1, -1));
           } else if (first === "%") {
-            instance.endsWith(k, where[k][1].slice(1));
+            instance.endsWith(k, v[1].slice(1));
           } else if (last === "%") {
-            instance.startsWith(k, where[k][1].slice(0, -1));
+            instance.startsWith(k, v[1].slice(0, -1));
           }
           break;
         }
         case "!=":
-          instance.notEqualTo(k, where[k][1]);
+          instance.notEqualTo(k, v[1]);
           break;
         case ">":
-          instance.greaterThan(k, where[k][1]);
+          instance.greaterThan(k, v[1]);
           break;
       }
     }
     return instance;
   }
 
-  private where(className: string, where: WL) {
+  private where(className: string, where: Where<T>) {
     if (_.isEmpty(where) || !where._complex) {
       return this.parseWhere(className, where);
     }
@@ -116,16 +115,17 @@ export default class LeanCloudModel extends Model {
 
       const filter = this.parseWhere(className, {
         ...where,
+        // @ts-ignore .
         [k]: where._complex[k],
       });
       filters.push(filter);
     }
 
-    return AV.Query[where?._complex._logic](...filters);
+    return AV.Query[where?._complex._logic!](...filters);
   }
 
   private async _select(
-    where: WL,
+    where: Where<T>,
     { desc, limit, offset, fields }: SelectOptions = {},
   ) {
     const instance = this.where(this.tableName, where);
@@ -151,13 +151,13 @@ export default class LeanCloudModel extends Model {
     return data.map((item) => item.toJSON());
   }
 
-  async select<T = any>(
-    where: WL,
+  async select(
+    where: Where<T>,
     options: SelectOptions = {},
-  ): Promise<T> {
+  ): Promise<T[]> {
     let data: any = [];
     let ret = [];
-    let offset = options.offset || 0;
+    const offset = options.offset || 0;
     do {
       options.offset = offset + data.length;
       ret = await this._select(where, options);
@@ -168,7 +168,7 @@ export default class LeanCloudModel extends Model {
       item[this.#pk] = item[this._pk].toString();
       delete item[this._pk];
       return item;
-    }) as unknown as T;
+    }) as unknown as T[];
   }
 
   async count(where = {}, options = {}) {
@@ -200,10 +200,10 @@ export default class LeanCloudModel extends Model {
     return resp;
   }
 
-  async update<T, R = any>(
+  async update(
     data: T,
-    where: WL,
-  ): Promise<R> {
+    where: Where<T>,
+  ): Promise<T> {
     const instance = this.where(this.tableName, where);
     const ret = await instance.find();
 
@@ -218,13 +218,13 @@ export default class LeanCloudModel extends Model {
         const resp = await item.save();
         return resp.toJSON();
       }),
-    ) as unknown as R;
+    ) as unknown as T;
   }
 
-  async delete<R = any>(where: WL): Promise<R> {
+  async delete(where: Where<T>): Promise<void> {
     const instance = this.where(this.tableName, where);
     const data = await instance.find();
 
-    return AV.Object.destroyAll(data as AV.Object[]) as unknown as R;
+    return AV.Object.destroyAll(data as AV.Object[]) as unknown as void;
   }
 }

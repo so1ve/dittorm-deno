@@ -1,18 +1,21 @@
 import storages from "./src/storage/mod.ts";
 import { ConfigMapping, SupportedStorages } from "./src/types.ts";
 
-const dittorm = (type: SupportedStorages) => {
-  if (!type) {
+const dittorm = (_type: SupportedStorages) => {
+  if (!_type) {
     throw Error("type is required!");
   }
 
-  if (!storages[type]) {
+  const type = _type.toLowerCase() as SupportedStorages;
+  const storage = storages[type];
+
+  if (!storage) {
     throw Error(`${type} service not supports yet!`);
   }
 
-  return (tableName: string, config: ConfigMapping[typeof type]) => {
+  return <T>(tableName: string, config: ConfigMapping[typeof type]) => {
     config.primaryKey = config.primaryKey || "id";
-    return new storages[type](tableName, config);
+    return new storage<T>(tableName, config);
   };
 };
 

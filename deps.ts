@@ -3,3 +3,5 @@ export { default as AV } from "https://esm.sh/leancloud-storage@4.12.0?target=es
 export * as leanAdapters from "https://esm.sh/@leancloud/platform-adapters-node@1.5.2?target=es2021";
 // Lodash
 export * as _ from "https://deno.land/x/lodash@4.17.15-es/lodash.js";
+// just-omit
+export { default as omit } from "https://esm.sh/just-omit@2.0.1?target=es2021";

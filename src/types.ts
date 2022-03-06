@@ -18,6 +18,7 @@ export type Where<T> = {
   [key in (keyof T | ComplexKey)]?: key extends ComplexKey ? Complex<T>
     : WhereValue<any> | Complex<T> | undefined;
 };
+
 export type SelectOptions = {
   limit?: number;
   offset?: number;
@@ -39,32 +40,27 @@ export type ConfigMapping = {
     leanMasterKey: string;
   } & Config;
 };
-type W = Where<"leancloud"> | Where<"common">;
-export abstract class Model<T extends Config = Config> {
+export abstract class Model<T = any, C extends Config = Config> {
   protected tableName: string;
-  protected config: T;
-  constructor(tableName: string, config: T) {
+  protected config: C;
+  constructor(tableName: string, config: C) {
     this.tableName = tableName;
     this.config = config;
   }
-  // deno-lint-ignore no-explicit-any
-  abstract select<T = any>(
-    where?: W,
+  abstract select(
+    where?: Where<T>,
     options?: SelectOptions,
-  ): Promise<T>;
+  ): Promise<T[]>;
   // 我不理解源代码里面options是什么
   // deno-lint-ignore no-explicit-any
-  abstract count(where?: W, options?: any): Promise<number>;
-  // deno-lint-ignore no-explicit-any
-  abstract add<T, R = any>(
+  abstract count(where?: Where<T>, options?: any): Promise<number>;
+  abstract add(
     data: T,
     access?: Access,
-  ): Promise<R>;
-  // deno-lint-ignore no-explicit-any
-  abstract update<T, R = any>(
+  ): Promise<T>;
+  abstract update(
     data: T,
-    where: W,
-  ): Promise<R>;
-  // deno-lint-ignore no-explicit-any
-  abstract delete<R = any>(where: W): Promise<R>;
+    where: Where<T>,
+  ): Promise<T>;
+  abstract delete(where: Where<T>): Promise<void>;
 }
