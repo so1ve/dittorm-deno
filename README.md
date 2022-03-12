@@ -3,7 +3,7 @@
 A Deno ORM for MySQL, SQLite, PostgreSQL, MongoDB, GitHub and serverless
 service like Deta, InspireCloud, CloudBase, LeanCloud. Ported from [walinejs/dittorm](https://github.com/walinejs/dittorm)
 
-> **WARNING**: Currently, only leancloud and dena are supported.
+> **WARNING**: Currently, only leancloud and deta are supported.
 
 ## Quick Start
 
