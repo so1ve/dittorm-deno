@@ -3,7 +3,7 @@
 A Deno ORM for MySQL, SQLite, PostgreSQL, MongoDB, GitHub and serverless
 service like Deta, InspireCloud, CloudBase, LeanCloud. Ported from [walinejs/dittorm](https://github.com/walinejs/dittorm)
 
-> **WARNING**: Currently, only leancloud storage is supported.
+> **WARNING**: Currently, only leancloud and deta are supported.
 
 ## Quick Start
 
@@ -29,7 +29,7 @@ const findUser = await user.select({ email: "i@imnerd.org" });
 #### LeanCloud
 
 ```ts
-import dittorm from "https://denopkg.com/so1ve/dittorm-deno/mod.ts";
+import dittorm from "https://deno.land/x/dittorm/mod.ts";
 
 const userModel = dittorm("leancloud")("user", {
   appId: "xxx",
@@ -43,6 +43,23 @@ const userModel = dittorm("leancloud")("user", {
 | `appId`     | ✅        |         |             |
 | `appKey`    | ✅        |         |             |
 | `masterKey` | ✅        |         |             |
+
+
+#### Deta
+
+```ts
+import dittorm from "https://deno.land/x/dittorm/mod.ts";
+
+const userModel = dittorm("deta")("user", {
+  projectKey: 'xxx'
+});
+```
+
+
+| Name    | Required | Default | Description             |
+| ------- | -------- | ------- | ----------------------- |
+| `projectKey` | ✅        |         | Deta project secret key |
+
 
 TODO
 
