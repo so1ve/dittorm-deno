@@ -1,5 +1,5 @@
 // import cloudbase from "./cloudbase.ts";
-// import deta from "./deta.ts";
+import deta from "./deta.ts";
 // import inspirecloud from "./inspirecloud.ts";
 import leancloud from "./leancloud.ts";
 // import mongodb from "./mongodb.ts";
@@ -9,7 +9,7 @@ import leancloud from "./leancloud.ts";
 
 export default {
   // cloudbase,
-  // deta,
+  deta,
   // inspirecloud,
   leancloud,
   //  mongodb,

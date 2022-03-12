@@ -6,7 +6,7 @@ import {
   Model,
   SelectOptions,
   Where,
-} from "../types.ts";
+} from "../types/mod.ts";
 
 type CL = ConfigMapping["leancloud"];
 type InitFunction = {
@@ -18,13 +18,7 @@ const init: InitFunction = (config: CL) => {
   if (init.initialized) return;
   init.initialized = true;
   AV.setAdapters(leanAdapters);
-  //@ts-ignore
-  AV.Cloud.useMasterKey(config.leanMasterKey);
-  AV.init({
-    appId: config.leanAppId,
-    appKey: config.leanAppKey,
-    masterKey: config.leanMasterKey,
-  });
+  AV.init(config);
 };
 export default class LeanCloudModel<T = any> extends Model<T> {
   #pk: string;
@@ -167,8 +161,9 @@ export default class LeanCloudModel<T = any> extends Model<T> {
     } while (ret.length === 100);
 
     return data.map((item: any) => {
-      item[this.#pk] = item[this._pk].toString();
+      const pk = item[this._pk].toString();
       delete item[this._pk];
+      item[this.#pk] = pk;
       return item;
     }) as unknown as T[];
   }

@@ -1,5 +1,5 @@
 import storages from "./src/storage/mod.ts";
-import { ConfigMapping, SupportedStorages } from "./src/types.ts";
+import { ConfigMapping, SupportedStorages } from "./src/types/mod.ts";
 
 const dittorm = (_type: SupportedStorages) => {
   if (!_type) {
@@ -15,10 +15,11 @@ const dittorm = (_type: SupportedStorages) => {
 
   return <T = any>(tableName: string, config: ConfigMapping[typeof type]) => {
     config.primaryKey = config.primaryKey || "id";
+    // @ts-ignore 我不会TS
     return new storage<T>(tableName, config);
   };
 };
 
 export default dittorm;
 export { dittorm };
-export * from "./src/types.ts";
+export * from "./src/types/mod.ts";

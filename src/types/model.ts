@@ -1,4 +1,4 @@
-import storages from "./storage/mod.ts";
+import storages from "../storage/mod.ts";
 
 export type SupportedStorages = keyof typeof storages;
 export type WhereValue<T = any> =
@@ -35,9 +35,12 @@ export type Config = {
 };
 export type ConfigMapping = {
   leancloud: {
-    leanAppId: string;
-    leanAppKey: string;
-    leanMasterKey: string;
+    appId: string;
+    appKey: string;
+    masterKey: string;
+  } & Config;
+  deta: {
+    projectKey: string;
   } & Config;
 };
 export abstract class Model<T = any, C extends Config = Config> {
