@@ -13,7 +13,7 @@ const dittorm = (_type: SupportedStorages) => {
     throw Error(`${type} service not supports yet!`);
   }
 
-  return <T>(tableName: string, config: ConfigMapping[typeof type]) => {
+  return <T = any>(tableName: string, config: ConfigMapping[typeof type]) => {
     config.primaryKey = config.primaryKey || "id";
     return new storage<T>(tableName, config);
   };

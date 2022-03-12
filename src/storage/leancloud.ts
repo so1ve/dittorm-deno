@@ -18,6 +18,8 @@ const init: InitFunction = (config: CL) => {
   if (init.initialized) return;
   init.initialized = true;
   AV.setAdapters(leanAdapters);
+  //@ts-ignore
+  AV.Cloud.useMasterKey(config.leanMasterKey);
   AV.init({
     appId: config.leanAppId,
     appKey: config.leanAppKey,
