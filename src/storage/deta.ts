@@ -1,15 +1,9 @@
 import { _, Deta, DetaBase as _DetaBase } from "../../deps.ts";
-import {
-  Args,
-  ConfigMapping,
-  Model,
-  SelectOptions,
-  Where,
-} from "../types/mod.ts";
+import { ConfigMapping, Model, SelectOptions, Where } from "../types/mod.ts";
 
 type CD = ConfigMapping["deta"];
 type DetaBase = ReturnType<typeof _DetaBase>;
-type DetaType = Args<DetaBase["put"]>[0];
+type DetaType = Parameters<DetaBase["put"]>[0];
 
 export default class DetaModel<T = any> extends Model<T> {
   #pk: string;
