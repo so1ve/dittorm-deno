@@ -1,24 +1,30 @@
-import storages from "./src/storage/mod.ts";
+import storages, { StoragesConstructed } from "./src/storage/mod.ts";
 import { ConfigMapping, SupportedStorages } from "./src/types/mod.ts";
 
-const dittorm = (_type: SupportedStorages) => {
+type GetModel<T extends SupportedStorages> = (
+  tableName: string,
+  config: ConfigMapping[T],
+) => StoragesConstructed[T];
+function dittorm<T extends SupportedStorages>(_type: T): GetModel<T> {
   if (!_type) {
     throw Error("type is required!");
   }
 
   const type = _type.toLowerCase() as SupportedStorages;
-  const storage = storages[type];
+  const DStorage = storages[type];
 
-  if (!storage) {
+  if (!Storage) {
     throw Error(`${type} service not supports yet!`);
   }
 
-  return <T = any>(tableName: string, config: ConfigMapping[typeof type]) => {
+  // deno-lint-ignore no-explicit-any
+  const getModel = <U = any>(tableName: string, config: ConfigMapping[T]) => {
     config.primaryKey = config.primaryKey || "id";
-    // @ts-ignore 我不会TS
-    return new storage<T>(tableName, config);
+    // @ts-ignore Fuck!
+    return new DStorage<U>(tableName, config);
   };
-};
+  return getModel as GetModel<T>;
+}
 
 export default dittorm;
 export { dittorm };

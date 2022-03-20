@@ -7,16 +7,16 @@ type DetaType = Parameters<DetaBase["put"]>[0];
 
 export default class DetaModel<T = any> extends Model<T> {
   #pk: string;
-  instance: DetaBase;
+  #instance: DetaBase;
 
-  static connect({ projectKey }: CD) {
+  private static connect({ projectKey }: CD) {
     return Deta(projectKey);
   }
 
   constructor(tableName: string, config: CD) {
     super(tableName, config);
     const deta = DetaModel.connect(config);
-    this.instance = deta.Base(tableName);
+    this.#instance = deta.Base(tableName);
     this.#pk = config.primaryKey || this._pk;
   }
 
@@ -24,7 +24,7 @@ export default class DetaModel<T = any> extends Model<T> {
     return "key";
   }
 
-  complex(obj: Record<string, unknown>, keys: string[]) {
+  private complex(obj: Record<string, unknown>, keys: string[]) {
     const result = new Array(
       keys.reduce((a, b) => a * (obj[b] as unknown[]).length, 1),
     );
@@ -49,7 +49,7 @@ export default class DetaModel<T = any> extends Model<T> {
    * so we need create a lower key than before to keep latest data in front
    * @returns string
    */
-  async uuid() {
+  private async uuid() {
     const items = await this.select({}, { limit: 1 });
     let lastKey;
     //@ts-ignore
@@ -62,7 +62,7 @@ export default class DetaModel<T = any> extends Model<T> {
     return (lastKey - Math.round(Math.random() * 100)).toString();
   }
 
-  where(where: Where<T>) {
+  private where(where: Where<T>) {
     if (_.isEmpty(where)) {
       return;
     }
@@ -155,7 +155,7 @@ export default class DetaModel<T = any> extends Model<T> {
        * if you want query by key field
        * you need use `get()` rather than `fetch()` method.
        */
-      const item = await this.instance.get(conditions.key as string);
+      const item = await this.#instance.get(conditions.key as string);
       item && data.push(item as unknown as T);
     } else if (offset) {
       limit = limit || 0;
@@ -167,7 +167,7 @@ export default class DetaModel<T = any> extends Model<T> {
       while (data.length < limit + offset) {
         const lastData = data[data.length - 1];
         const last = lastData ? (lastData as unknown as any).key : undefined;
-        const { items } = await this.instance.fetch(
+        const { items } = await this.#instance.fetch(
           conditions as unknown as any,
           {
             limit,
@@ -183,7 +183,7 @@ export default class DetaModel<T = any> extends Model<T> {
 
       data = data.slice(offset, offset + limit);
     } else {
-      const { items } = await this.instance.fetch(
+      const { items } = await this.#instance.fetch(
         conditions as unknown as any,
         {
           limit: limit,
@@ -223,13 +223,13 @@ export default class DetaModel<T = any> extends Model<T> {
       return counts.reduce((a, b) => a + b, 0);
     }
 
-    const { count } = await this.instance.fetch(conditions as unknown as any);
+    const { count } = await this.#instance.fetch(conditions as unknown as any);
     return count;
   }
 
   async add(data: Partial<T>): Promise<T> {
     const uuid = await this.uuid();
-    const resp = await this.instance.put(data as DetaType, uuid);
+    const resp = await this.#instance.put(data as DetaType, uuid);
     resp![this.#pk] = resp![this._pk];
     delete resp![this._pk];
     return resp as unknown as T;
@@ -244,7 +244,7 @@ export default class DetaModel<T = any> extends Model<T> {
       items.map(async (item) => {
         const updateData = typeof data === "function" ? data(item) : data;
         const nextData = { ...item, ...updateData };
-        await this.instance.put(nextData as DetaType, (item as any)[this.#pk]);
+        await this.#instance.put(nextData as DetaType, (item as any)[this.#pk]);
         return nextData;
       }),
     ) as unknown as T;
@@ -253,7 +253,7 @@ export default class DetaModel<T = any> extends Model<T> {
   async delete(where: Where<T>) {
     const items = await this.select(where);
     Promise.all(
-      items.map((item: any) => this.instance.delete(item[this.#pk])),
+      items.map((item: any) => this.#instance.delete(item[this.#pk])),
     );
   }
 }
