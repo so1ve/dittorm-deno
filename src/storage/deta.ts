@@ -24,7 +24,7 @@ export default class DetaModel<T = any> extends Model<T> {
     return "key";
   }
 
-  private complex(obj: Record<string, unknown>, keys: string[]) {
+  #complex(obj: Record<string, unknown>, keys: string[]) {
     const result = new Array(
       keys.reduce((a, b) => a * (obj[b] as unknown[]).length, 1),
     );
@@ -49,7 +49,7 @@ export default class DetaModel<T = any> extends Model<T> {
    * so we need create a lower key than before to keep latest data in front
    * @returns string
    */
-  private async uuid() {
+  async #uuid() {
     const items = await this.select({}, { limit: 1 });
     let lastKey;
     //@ts-ignore
@@ -62,7 +62,7 @@ export default class DetaModel<T = any> extends Model<T> {
     return (lastKey - Math.round(Math.random() * 100)).toString();
   }
 
-  private where(where: Where<T>) {
+  #where(where: Where<T>) {
     if (_.isEmpty(where)) {
       return;
     }
@@ -127,14 +127,14 @@ export default class DetaModel<T = any> extends Model<T> {
       return conditions;
     }
 
-    return this.complex(conditions, _isArrayKeys);
+    return this.#complex(conditions, _isArrayKeys);
   }
 
   async select(
     where: Where<T>,
     { limit, offset, fields }: SelectOptions = {},
   ): Promise<T[]> {
-    const conditions = this.where(where);
+    const conditions = this.#where(where);
     if (conditions && Array.isArray(conditions)) {
       return Promise.all(
         conditions.map((condition) =>
@@ -215,7 +215,7 @@ export default class DetaModel<T = any> extends Model<T> {
   }
 
   async count(where = {}): Promise<number> {
-    const conditions = this.where(where);
+    const conditions = this.#where(where);
     if (Array.isArray(conditions)) {
       const counts = await Promise.all(
         conditions.map((condition) => this.count(condition)),
@@ -228,7 +228,7 @@ export default class DetaModel<T = any> extends Model<T> {
   }
 
   async add(data: Partial<T>): Promise<T> {
-    const uuid = await this.uuid();
+    const uuid = await this.#uuid();
     const resp = await this.#instance.put(data as DetaType, uuid);
     resp![this.#pk] = resp![this._pk];
     delete resp![this._pk];
