@@ -22,13 +22,13 @@ const init: InitFunction = (config: CL) => {
 };
 export default class LeanCloudModel<T = any> extends Model<T> {
   #pk: string;
-  private static connect(config: CL) {
+  static #connect(config: CL) {
     init(config);
   }
 
   constructor(tableName: string, config: CL) {
     super(tableName, config);
-    LeanCloudModel.connect(config);
+    LeanCloudModel.#connect(config);
     this.#pk = config.primaryKey || this._pk;
   }
 
@@ -36,7 +36,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
     return "objectId";
   }
 
-  private parseWhere(className: string, where: Where<T>) {
+  #parseWhere(className: string, where: Where<T>) {
     const instance = new AV.Query(className);
     if (_.isEmpty(where)) {
       return instance;
@@ -98,9 +98,9 @@ export default class LeanCloudModel<T = any> extends Model<T> {
     return instance;
   }
 
-  private where(className: string, where: Where<T>) {
+  #where(className: string, where: Where<T>) {
     if (_.isEmpty(where) || !where._complex) {
-      return this.parseWhere(className, where);
+      return this.#parseWhere(className, where);
     }
 
     const filters = [];
@@ -109,7 +109,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
         continue;
       }
 
-      const filter = this.parseWhere(className, {
+      const filter = this.#parseWhere(className, {
         ...where,
         // @ts-ignore .
         [k]: where._complex[k],
@@ -124,7 +124,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
     where: Where<T>,
     { desc, limit, offset, fields }: SelectOptions = {},
   ) {
-    const instance = this.where(this.tableName, where);
+    const instance = this.#where(this.tableName, where);
     if (desc) {
       instance.descending(desc);
     }
@@ -169,7 +169,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
   }
 
   async count(where = {}, options = {}) {
-    const instance = this.where(this.tableName, where);
+    const instance = this.#where(this.tableName, where);
     return await instance.count(options).catch((e) => {
       if (e.code === 101) {
         return 0;
@@ -201,7 +201,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
     data: T,
     where: Where<T>,
   ): Promise<T> {
-    const instance = this.where(this.tableName, where);
+    const instance = this.#where(this.tableName, where);
     const ret = await instance.find();
 
     return Promise.all(
@@ -219,7 +219,7 @@ export default class LeanCloudModel<T = any> extends Model<T> {
   }
 
   async delete(where: Where<T>): Promise<void> {
-    const instance = this.where(this.tableName, where);
+    const instance = this.#where(this.tableName, where);
     const data = await instance.find();
 
     return AV.Object.destroyAll(data as AV.Object[]) as unknown as void;
