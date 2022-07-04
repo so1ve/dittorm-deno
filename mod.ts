@@ -13,7 +13,7 @@ function dittorm<T extends SupportedStorages>(_type: T): GetModel<T> {
   const type = _type.toLowerCase() as SupportedStorages;
   const DStorage = storages[type];
 
-  if (!Storage) {
+  if (!DStorage) {
     throw Error(`${type} service not supports yet!`);
   }
 
